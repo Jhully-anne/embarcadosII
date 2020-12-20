@@ -1,5 +1,21 @@
 # Metrônomo digital
 
+## Projeto
+* Entradas
+  * Ler valor do potenciômetro (20, 200)
+  * Botão muda o compasso
+* Saídas
+
+## Comandos
+### Compilar
+```
+make all
+```
+### Gravar na placa
+```
+sudo make flash
+```
+
 ## Docker
 ### Criar Container
 ``` 
