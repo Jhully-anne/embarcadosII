@@ -1,0 +1,14 @@
+version: "3.7"
+
+services:
+  embarcados2: 
+    build: 
+        context: .
+        dockerfile: Dockerfile
+    networks:
+        - default
+    volumes:
+        - .:/home/embarcados
+    container_name: embarcados2
+    stdin_open: true
+    tty: true

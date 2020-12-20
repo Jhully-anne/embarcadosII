@@ -19,7 +19,8 @@ sudo make flash
 ## Docker
 ### Criar Container
 ``` 
-docker run --name efm32 -it -v  C:\WorkSpace\Jhully\Hans:/home/trab ubuntu bash
+docker-compose up
+docker-compose exec embarcados2 bash -c 'cd /home/embarcados; exec bash'
 ```
 ### Iniciar Container existente
 ```
