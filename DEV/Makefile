@@ -1,7 +1,7 @@
 all: compila exec
 
 compila:
-	g++ *.c -o output
+	gcc *.c -o output
 
 exec:
 	./output
