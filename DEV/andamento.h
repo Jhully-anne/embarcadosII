@@ -6,6 +6,4 @@
 
 int     convert_potenciometro(int value);
 
-
-
 #endif
