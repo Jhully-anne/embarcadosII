@@ -246,7 +246,9 @@ uint32_t presc;
     // Set ADC Control register
     ADC0->CTRL = newctrl;
 
-
+    
+    /* Configura a referência do ADC em VDD */
+    ADC0->SINGLECTRL |= ADC_SINGLECTRL_REF_VDD;		// Seta a referência para VDD (3.3V)
     return 0;
 }
 
@@ -336,24 +338,14 @@ uint32_t ADC_Read(uint32_t ch) {
  *
  * @note  Uses the configuration set
  */
-uint32_t ADC_StartReading(uint32_t ch) {
+uint32_t ADC_StartReading(uint32_t channel) {
 
-    // If ADC running, stop it
-    ADC0->CMD = ADC_CMD_SINGLESTOP;
+   /* Seleciona o canal de entrada do ADC */
+    ADC0->SINGLECTRL &= ~(_ADC_SINGLECTRL_INPUTSEL_MASK);	// Zera o campo de inputsel do singlectrl
+    ADC0->SINGLECTRL |= channel; // Seta o número do canal deslocado para a posição correta em inputsel
 
-    // Save SINGLECTRL register
-    uint32_t oldsinglectrl = ADC0->SINGLECTRL;
-
-    // Configure desired read
-    ADC0->SINGLECTRL = singlectrl[ch];
-
-    // Verify if warmup is needed. If so, wait
-    if( (ADC0->SINGLECTRL^oldsinglectrl) & _ADC_SINGLECTRL_REF_MASK ) {    // Any difference
-        while( (ADC0->STATUS&ADC_STATUS_WARM) == 0 ) {}                   // Beware!! Infinite loop
-    }
-
-    // Start reading
-    ADC0->CMD = ADC_CMD_SINGLESTART;
+    /* Manda a sinalização para começar a conversão ao ADC */
+    ADC0->CMD |= ADC_CMD_SINGLESTART;	// Começa a conversão do canal setado
     return 0;
 }
 
@@ -365,8 +357,8 @@ uint32_t ADC_StartReading(uint32_t ch) {
 uint32_t ADC_GetReading(uint32_t ch) {
 
     // Wait conversion
-    while( (ADC0->STATUS&ADC_STATUS_SINGLEACT) != 0 ) {}
-    while( (ADC0->STATUS&ADC_STATUS_SINGLEDV) == 0 ) {}
+    //while( (ADC0->STATUS&ADC_STATUS_SINGLEACT) != 0 ) {}
+    //while( (ADC0->STATUS&ADC_STATUS_SINGLEDV) == 0 ) {}
 
     return ADC0->SINGLEDATA;
 }

@@ -13,7 +13,10 @@
  * #include "efm32gg995f1024.h"
  */
 //#include "gpio.h"
+
 #include "em_device.h"
+//#include "gpio.h"
+
 #include "adc.h"
 //#include "touch.h"
 #include "clock_efm32gg2.h"
@@ -24,7 +27,10 @@
 #include "button.h"
 #include "lcd.h"
 #include "compasso.h"
+#include "andamento.h"
 
+
+#define CH4 0x00000004UL << 8
 
 #define DELAYVAL 2
 
@@ -98,29 +104,55 @@ uint64_t l = tick+delay;
 // int getchar(int c) { return UART_GetChar(); }
 ///@}
 
-// void Sensor_Listening(void) {
-//     static int8_t state = 0;
-//     static int potenciometro = 0;
-    
-//     switch(state) {
-// 		case 0:
-// 		    ADC_SingleRequest(CH4);
-// 		    state = 1;
-// 		break;
-// 		case 1:
-// 		    potenciometro = ADC_SingleRead();
-// 			state = 0;
-// 			printf("%d\n",potenciometro);
-// 		break;
-// 	}
-	
-// }
+static int potenciometro;
+int passo;
+
+int task_ID;
 
 void Estado_Compasso(void) {
     printf("\n%s\n",ProximoEstadoCompasso());
 }
 
-int task_ID;
+void Task_Compasso(void){
+    if(task_ID != 0){
+            Task_Delete(task_ID);
+    }
+    task_ID = Task_Add(Estado_Compasso,1000*60/passo,1);
+}
+
+void Potenciometro_Listening(void) {
+    static int8_t state = 0;
+    static int potenciometro_new = 0;
+    int passo_new = 20;
+    potenciometro = 0;
+    
+    switch(state) {
+		case 0:
+		    ADC_StartReading(CH4);
+		    state = 1;
+		break;
+		case 1:
+		    potenciometro_new = ADC_GetReading(CH4);
+			state = 0;
+            if(potenciometro_new != potenciometro){
+                potenciometro = potenciometro_new;
+
+                passo_new = convert_potenciometro(potenciometro);
+                if(passo_new != passo){
+                    passo = passo_new;
+                    Task_Compasso();
+                    printf("Potenciometro: %d => %d\n",potenciometro, passo);
+                }
+            }
+			
+		break;
+	}
+	
+}
+
+
+
+
 
 void Button_Listening(void) {
     char *str;
@@ -129,19 +161,13 @@ void Button_Listening(void) {
         str = ProximoEstado();
         LCD_WriteString(str);
         printf("\n---  %s  ---\n",str);
-        if(task_ID != 0){
-            Task_Delete(task_ID);
-        }
-        task_ID = Task_Add(Estado_Compasso,200,1);
+        Task_Compasso();
     }
     if( b&BUTTON2 ) {
         str = AnteriorEstado();
         LCD_WriteString(str);
         printf("\n---  %s  ---\n",str);
-        if(task_ID != 0){
-            Task_Delete(task_ID);
-        }
-        task_ID = Task_Add(Estado_Compasso,200,1);
+        Task_Compasso();
     }
 }
 
@@ -158,6 +184,7 @@ void Button_Listening(void) {
 int main(void) {
     Compasso_Init();
     task_ID = 0;
+    passo = 20;
 //char line[100];
 //int v;
 //uint32_t v;
@@ -176,10 +203,14 @@ int main(void) {
     /* Turn on LEDs */
     //LED_Write(0,LED1|LED2);
 
+    /*  Configura o ADC */
+    ADC_Init(500000);
+    ADC_ConfigChannel(CH4,0);
 
     // /* Inicia as tarefas */
     Task_Init();
     Task_Add(Button_Listening,100,1);//Chamado a cada 10*(0.5)ms (200Hz) e fica 1*(0.5)ms fazendo a função. Se tiver printf tem que ser alto
+    Task_Add(Potenciometro_Listening,100,1);
 
 
 
@@ -198,7 +229,8 @@ int main(void) {
 
 
         /* Configure Pins in GPIOE */
-    //GPIO_Init(GPIOE,ADC_CH4,0);       // LED pins configured as output
+    //GPIO_Init(GPIOD,CH4,0);       // LED pins configured as output
+    //GPIO_ConfigPins(GPIOD,CH4,GPIO_MODE_INPUT);
 
     //ADC_Init(500000);
     //ADC_ConfigChannel(ADC_CH4,0);
@@ -225,13 +257,14 @@ int main(void) {
         // //v = Touch_ReadChannel(ADC_CH4);
         // //ADC_StartReading(ADC_CH4);
 
-        // Delay(500);
+        //Delay(500);
         // //v = ADC_GetReading(ADC_CH4);
         // v = ADC_Read(ADC_CH4);
-        // //v = GPIO_ReadPins(GPIOE);
+        //v = GPIO_ReadPins(GPIOD);
+        //v = ~(v)&CH4;
         
 
-        // printf("\nOi: %d\n", (int)v);
+        //printf("\nValue: %d\n", (int)v);
 
 
         // // printf("\r\n\n\n\rWhat is your name?\n");
