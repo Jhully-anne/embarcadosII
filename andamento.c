@@ -1,10 +1,29 @@
 #include "andamento.h"
 
-int convert_potenciometro(int value){
+// Propriedades
+static int potenciometro;
+int passo;
+int task_ID;
 
-    int passo = (value-POT_MIN)*180/(POT_MAX-POT_MIN)+20;
-    //pot_max=2500 -> 200 bpm
-    //pot_min=1500 -> 20 bpm
-    //int frequencia = passo/60;
+
+int convert_potenciometro(){
+
+    int passo = (potenciometro-POT_MIN)*180/(POT_MAX-POT_MIN)+20;
     return (passo < 20 ? 20 : (passo > 200 ? 200 : passo));
 }
+
+void Andamento_Init(void){
+    potenciometro = 0;
+    passo = 20;
+    task_ID = 0;
+}
+
+// Get
+int getTaskID(){return task_ID;}
+int getPasso(){return passo;}
+int getPotenciometro(){return potenciometro;}
+
+//Set
+void setTaskID(int value){task_ID = value;}
+void setPasso(int value){passo = value;}
+void setPotenciometro(int value){potenciometro = value;}

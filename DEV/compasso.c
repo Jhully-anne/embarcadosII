@@ -1,4 +1,5 @@
 #include "compasso.h"
+#include "andamento.h"
 
 int estado;
 int estadoCompasso;

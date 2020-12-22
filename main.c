@@ -12,15 +12,11 @@
  * The alternative is to include the processor specific file directly
  * #include "efm32gg995f1024.h"
  */
-//#include "gpio.h"
 
 #include "em_device.h"
 #include "em_emu.h"
 #include "em_chip.h"
-//#include "gpio.h"
-
 #include "adc.h"
-//#include "touch.h"
 #include "clock_efm32gg2.h"
 
 
@@ -37,15 +33,6 @@
 
 #define DELAYVAL 2
 
-int tempo = 1000;
-
-//#include "uart2.h"
-//#include "tt_tasks.h"
-
-// #define CH4 ADC_SINGLECTRL_INPUTSEL_CH4
-// #define CH5 ADC_SINGLECTRL_INPUTSEL_CH5
-
-
 
 /*************************************************************************//**
  * @brief  Sys Tick Handler
@@ -53,19 +40,6 @@ int tempo = 1000;
 const int TickDivisor = 1000; // milliseconds
 
 volatile uint64_t tick = 0;
-
-// void SysTick_Handler (void) {
-// static int counter = 0;
-
-//     tick++;
-
-//     if( counter == 0 ) {
-//         counter = TickDivisor;
-//         // Process every second
-//         LED_Toggle(LED1);
-//     }
-//     counter--;
-// }
 
 /** ***************************************************************************
  * @brief  SysTick interrupt handler
@@ -97,69 +71,72 @@ uint64_t l = tick+delay;
 
 }
 
-
-/**************************************************************************//**
- * @brief  Input/output functions for ministdio functions
- */
-
-///@{
-// int putchar(int c) { UART_SendChar(c); return 0; }
-// int getchar(int c) { return UART_GetChar(); }
-///@}
-
-static int potenciometro;
-int passo;
-
-int task_ID;
-
 void Estado_Compasso(void) {
+    //Vai para o próximo estado do compasso (Forte, Fraco ou Meio)
     printf("\n%s\n",ProximoEstadoCompasso());
+
+    //PWM -> Atualiza itencidade do LED/Buzzer
     set_dutyCyclePercent(GetEstadoCompassoIntensidade());
-    Delay(60000/(passo*3));
+
+    //Tempo em que o som/luz fica ativo 
+    Delay(60000/(getPasso()*3));
+
+    //Zera Som/Luz
     set_dutyCyclePercent(0);
 }
 
-void Task_Compasso(void){
+void Create_Task_Compasso(void){
+    int task_ID = getTaskID();
+
     if(task_ID != 0){
             Task_Delete(task_ID);
     }
-    task_ID = Task_Add(Estado_Compasso,1000*60/passo,1);
+    task_ID = Task_Add(Estado_Compasso,60000/getPasso(),1);
+
+    setTaskID(task_ID);
 }
 int cont = 0;
 void Potenciometro_Listening(void) {
     static int8_t state = 0;
     static int potenciometro_new = 0;
     int passo_new = 20;
-    potenciometro = 0;
     
     switch(state) {
-		case 0:
+		case 0://Indica que vai ler potenciômetro
 		    ADC_StartReading(CH4);
+
+            //Vai pro estado de leitura
 		    state = 1;
 		break;
-		case 1:
+		case 1://Lê o potenciômetro
 		    potenciometro_new = ADC_GetReading(CH4);
-			state = 0;
-            if(potenciometro_new != potenciometro){
-                potenciometro = potenciometro_new;
 
-                passo_new = convert_potenciometro(potenciometro);
-                if(passo_new != passo){
+            //Verifica se é direferente do valor anterior
+            if(potenciometro_new != getPotenciometro()){
+                setPotenciometro(potenciometro_new);
+                passo_new = convert_potenciometro();
+
+                //Debounce do passo
+                if(passo_new != getPasso())
                     cont++;
-                }
                 else
-                {
                     cont = 0;
-                }
-                
+                //Se o passo for diferente em 10 leituras seguidas -> Ativa
                 if(cont == 10){
-                    passo = passo_new;
-                    Task_Compasso();
-                    printf("Potenciometro: %d => %d\n",potenciometro, passo);
+                    //Atualiza o passo
+                    setPasso(passo_new);
+
+                    //Cria task com novo passo
+                    Create_Task_Compasso();
+
+                    //DEBUG
+                    printf("Potenciometro: %d => %d\n",getPotenciometro(), getPasso());
                     cont = 0;
                 }
             }
-			
+
+            //Volta pro estado Zero
+			state = 0;
 		break;
 	}
 	
@@ -176,13 +153,13 @@ void Button_Listening(void) {
         str = ProximoEstado();
         LCD_WriteString(str);
         printf("\n---  %s  ---\n",str);
-        Task_Compasso();
+        Create_Task_Compasso();
     }
     if( b&BUTTON2 ) {
         str = AnteriorEstado();
         LCD_WriteString(str);
         printf("\n---  %s  ---\n",str);
-        Task_Compasso();
+        Create_Task_Compasso();
     }
 }
 
@@ -198,8 +175,7 @@ void Button_Listening(void) {
 
 int main(void) {
     Compasso_Init();
-    task_ID = 0;
-    passo = 20;
+    Andamento_Init();
 
 
     //PWM
@@ -207,11 +183,6 @@ int main(void) {
     initGpio();
     initTimer();
     
-
-
-//char line[100];
-//int v;
-//uint32_t v;
     /* Configure LEDs */
     LED_Init(LED1|LED2);
 
@@ -220,12 +191,6 @@ int main(void) {
 
     /* Configure buttons */
     Button_Init(BUTTON1|BUTTON2);
-
-    
-    
-
-    /* Turn on LEDs */
-    //LED_Write(0,LED1|LED2);
 
     /*  Configura o ADC */
     ADC_Init(500000);
@@ -251,55 +216,10 @@ int main(void) {
     LCD_ClearAll();
     Delay(DELAYVAL);
 
-
-        /* Configure Pins in GPIOE */
-    //GPIO_Init(GPIOD,CH4,0);       // LED pins configured as output
-    //GPIO_ConfigPins(GPIOD,CH4,GPIO_MODE_INPUT);
-
-    //ADC_Init(500000);
-    //ADC_ConfigChannel(ADC_CH4,0);
-    //GetCalibrationValues();
-
-    //Touch_Init();
-
-    // /* Configure UART */
-    // UART_Init();
-    // __enable_irq();
-
     printf("\r\n\n\n\rHello\n\r");
-    printf("\nOi 0\n");
-    //int i = 0;
     while (1) {
         Task_Dispatch();
         EMU_EnterEM1();
-
-         //Delay(500);
-        // printf("\nOi 0\n");
-        //printf("\nOi %d\n",i);
-        //i++;
-        // //Delay(2000);
-        
-        // //v = Touch_ReadChannel(ADC_CH4);
-        // //ADC_StartReading(ADC_CH4);
-
-        //Delay(500);
-        // //v = ADC_GetReading(ADC_CH4);
-        // v = ADC_Read(ADC_CH4);
-        //v = GPIO_ReadPins(GPIOD);
-        //v = ~(v)&CH4;
-        
-
-        //printf("\nValue: %d\n", (int)v);
-
-
-        // // printf("\r\n\n\n\rWhat is your name?\n");
-        // // fgets(line,99,stdin);
-        // // printf("Hello %s\n",line);
-        
-        
-        // //Task_Dispatch();
-        // //Delay(1000);
-        // i++;
     }
 
 }
