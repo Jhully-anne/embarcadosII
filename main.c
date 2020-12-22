@@ -1,16 +1,13 @@
 /** ***************************************************************************
  * @file    main.c
- * @brief   Simple UART Demo for EFM32GG_STK3700
- * @version 1.0
+ * @brief   Projeto Metronomo digital - Jhully Anne
+ * @version 2020/eart
 ******************************************************************************/
 
 #include <stdint.h>
 #include "tt_tasks.h"
 /*
- * Including this file, it is possible to define which processor using command line
- * E.g. -DEFM32GG995F1024
- * The alternative is to include the processor specific file directly
- * #include "efm32gg995f1024.h"
+ * 
  */
 
 #include "em_device.h"
@@ -43,18 +40,14 @@ volatile uint64_t tick = 0;
 
 /** ***************************************************************************
  * @brief  SysTick interrupt handler
- *
  * @note   Just calls Task_Update
  * @note   Called every 1 ms
  */
 
 void SysTick_Handler(void) {
     Task_Update();
-
     static int counter = 0;             // must be static
-
     tick++;
-    
     if( counter != 0 ) {
         counter--;
     } else {
@@ -63,19 +56,16 @@ void SysTick_Handler(void) {
     }
 }
 
-
 void Delay(int delay) {
 uint64_t l = tick+delay;
-
     while(tick<l) {}
-
 }
 
 void Estado_Compasso(void) {
     //Vai para o próximo estado do compasso (Forte, Fraco ou Meio)
     printf("\n%s\n",ProximoEstadoCompasso());
 
-    //PWM -> Atualiza itencidade do LED/Buzzer
+    //PWM -> Atualiza intensidade do LED/Buzzer
     set_dutyCyclePercent(GetEstadoCompassoIntensidade());
 
     //Tempo em que o som/luz fica ativo 
@@ -91,7 +81,7 @@ void Create_Task_Compasso(void){
     if(task_ID != 0){
             Task_Delete(task_ID);
     }
-    task_ID = Task_Add(Estado_Compasso,60000/getPasso(),1);
+    task_ID = Task_Add(Estado_Compasso,60000/getPasso(),0);
 
     setTaskID(task_ID);
 }
@@ -177,7 +167,6 @@ int main(void) {
     Compasso_Init();
     Andamento_Init();
 
-
     //PWM
     CHIP_Init();
     initGpio();
@@ -198,7 +187,7 @@ int main(void) {
 
     // /* Inicia as tarefas */
     Task_Init();
-    Task_Add(Button_Listening,100,1);//Chamado a cada 10*(0.5)ms (200Hz) e fica 1*(0.5)ms fazendo a função. Se tiver printf tem que ser alto
+    Task_Add(Button_Listening,100,1);
     Task_Add(Potenciometro_Listening,100,1);
 
 
