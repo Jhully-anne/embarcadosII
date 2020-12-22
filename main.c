@@ -15,6 +15,8 @@
 //#include "gpio.h"
 
 #include "em_device.h"
+#include "em_emu.h"
+#include "em_chip.h"
 //#include "gpio.h"
 
 #include "adc.h"
@@ -28,6 +30,7 @@
 #include "lcd.h"
 #include "compasso.h"
 #include "andamento.h"
+#include "pwm.h"
 
 
 #define CH4 0x00000004UL << 8
@@ -111,6 +114,7 @@ int task_ID;
 
 void Estado_Compasso(void) {
     printf("\n%s\n",ProximoEstadoCompasso());
+    set_dutyCyclePercent(GetEstadoCompassoIntensidade());
 }
 
 void Task_Compasso(void){
@@ -185,6 +189,15 @@ int main(void) {
     Compasso_Init();
     task_ID = 0;
     passo = 20;
+
+
+    //PWM
+    CHIP_Init();
+    initGpio();
+    initTimer();
+    
+
+
 //char line[100];
 //int v;
 //uint32_t v;
@@ -247,6 +260,7 @@ int main(void) {
     //int i = 0;
     while (1) {
         Task_Dispatch();
+        EMU_EnterEM1();
 
          //Delay(500);
         // printf("\nOi 0\n");

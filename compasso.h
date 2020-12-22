@@ -9,6 +9,7 @@
     void EstadoCompasso_Reset(void);
     char* ProximoEstadoCompasso(void);
     char* AnteriorEstadoCompasso(void);
+    int GetEstadoCompassoIntensidade();
 
 #endif
 

@@ -13,6 +13,14 @@ static char* VetorEstadoCompasso[6][6] = {
     {"Forte", "Fraco", "Fraco", "Meio", "Fraco", "Forte"},
     {"Forte", "Fraco", "Fraco", "Meio", "Fraco", "Fraco"}
 };
+static int VetorEstadoCompassoIntencidade[6][6] = {
+    {100, 50, 100, 50, 100, 50},
+    {100, 50, 50, 100, 50, 50},
+    {100, 50, 50, 50, 100, 50},
+    {100, 50, 5, 50, 100, 50},
+    {100, 50, 50, 5, 50, 100},
+    {100, 50, 50, 5, 50, 50}
+};
 
 void Compasso_Init() {
     estado = 0;
@@ -60,4 +68,8 @@ char* AnteriorEstadoCompasso() {
     else
         estadoCompasso = 5;    
     return VetorEstadoCompasso[estado][estadoCompasso];
+}
+
+int GetEstadoCompassoIntensidade(){
+    return VetorEstadoCompassoIntencidade[estado][estadoCompasso];
 }
