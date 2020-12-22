@@ -125,7 +125,7 @@ void Task_Compasso(void){
     }
     task_ID = Task_Add(Estado_Compasso,1000*60/passo,1);
 }
-
+int cont = 0;
 void Potenciometro_Listening(void) {
     static int8_t state = 0;
     static int potenciometro_new = 0;
@@ -145,9 +145,18 @@ void Potenciometro_Listening(void) {
 
                 passo_new = convert_potenciometro(potenciometro);
                 if(passo_new != passo){
+                    cont++;
+                }
+                else
+                {
+                    cont = 0;
+                }
+                
+                if(cont == 10){
                     passo = passo_new;
                     Task_Compasso();
                     printf("Potenciometro: %d => %d\n",potenciometro, passo);
+                    cont = 0;
                 }
             }
 			
