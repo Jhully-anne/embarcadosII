@@ -115,6 +115,8 @@ int task_ID;
 void Estado_Compasso(void) {
     printf("\n%s\n",ProximoEstadoCompasso());
     set_dutyCyclePercent(GetEstadoCompassoIntensidade());
+    Delay(60000/(passo*3));
+    set_dutyCyclePercent(0);
 }
 
 void Task_Compasso(void){

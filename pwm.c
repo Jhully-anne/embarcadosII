@@ -119,21 +119,4 @@ void set_dutyCyclePercent(int value){
     dutyCyclePercent = value;
 }
 
-/**************************************************************************//**
- * @brief
- *    Main function
- *****************************************************************************/
-// int main(void)
-// {
-//   // Chip errata
-//   CHIP_Init();
-
-//   // Initializations
-//   initGpio();
-//   initTimer();
-
-//   while (1) {
-//     EMU_EnterEM1(); // Enter EM1 (won't exit)
-//   }
-// }
 
