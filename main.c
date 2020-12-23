@@ -1,8 +1,8 @@
-/** ***************************************************************************
+/** **************************************************************************
  * @file    main.c
  * @brief   Projeto Metronomo digital - Jhully Anne
  * @version 2020/eart
-******************************************************************************/
+******************************************************************************
 
 #include <stdint.h>
 #include "tt_tasks.h"
@@ -204,6 +204,9 @@ int main(void) {
 
     LCD_ClearAll();
     Delay(DELAYVAL);
+
+    //Mostra o estado inicial
+    LCD_WriteString("2/4");
 
     printf("\r\n\n\n\rHello\n\r");
     while (1) {

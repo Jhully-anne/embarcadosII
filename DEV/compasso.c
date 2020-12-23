@@ -3,8 +3,11 @@
 
 int estado;
 int estadoCompasso;
+int tempoatual;
 
 static char VetorEstado[6][5] = {"2/4", "3/4", "4/4", "5/4", "6/4", "7/4"};
+
+static char numerotempos[6] = {2, 3, 4, 5, 6, 7};
 
 static char* VetorEstadoCompasso[6][6] = {
     {"Forte", "Fraco", "Forte", "Fraco", "Forte", "Fraco"},
@@ -26,6 +29,7 @@ static int VetorEstadoCompassoIntencidade[6][6] = {
 void Compasso_Init() {
     estado = 0;
     EstadoCompasso_Reset();
+    tempoatual=0;
 }
 
 char* ProximoEstado() {
@@ -48,7 +52,7 @@ char* AnteriorEstado() {
     return VetorEstado[estado];
 }
 
-// ------------Estado do Compaso----------------------
+// ------------Estado do Compasso----------------------
 void EstadoCompasso_Reset() {
     estadoCompasso = 0;
 }
