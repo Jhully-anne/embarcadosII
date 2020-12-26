@@ -3,7 +3,8 @@
 int estado;
 int estadoCompasso;
 
-static char VetorEstado[6][5] = {"2/4", "3/4", "4/4", "5/4", "6/4", "7/4"};
+static char VetorEstado[6][5] = {"2/4", "3/4", "4/4", "4/4", "5/4", "6/4"};
+static int VetorPasso[6] = {1, 2, 3, 3, 4, 5};
 
 static char* VetorEstadoCompasso[6][6] = {
     {"Forte", "Fraco", "Forte", "Fraco", "Forte", "Fraco"},
@@ -47,29 +48,21 @@ char* AnteriorEstado() {
     return VetorEstado[estado];
 }
 
-// ------------Estado do Compaso----------------------
-void EstadoCompasso_Reset() {
-    estadoCompasso = 0;
-}
-
-char* ProximoEstadoCompasso() {
-    if (estadoCompasso < 5){
-        estadoCompasso = estadoCompasso+1;
-    }
-    else{
+    // ------------Estado do Compaso----------------------
+    void EstadoCompasso_Reset() {
         estadoCompasso = 0;
-    }       
-    return VetorEstadoCompasso[estado][estadoCompasso];
-}
+    }
 
-char* AnteriorEstadoCompasso() {
-    if (estadoCompasso > 0)
-        estadoCompasso--;
-    else
-        estadoCompasso = 5;    
-    return VetorEstadoCompasso[estado][estadoCompasso];
-}
+    char* ProximoEstadoCompasso() {
+        if (estadoCompasso < VetorPasso[estado]){
+            estadoCompasso = estadoCompasso+1;
+        }
+        else{
+            estadoCompasso = 0;
+        }       
+        return VetorEstadoCompasso[estado][estadoCompasso];
+    }
 
-int GetEstadoCompassoIntensidade(){
-    return VetorEstadoCompassoIntencidade[estado][estadoCompasso];
-}
+    int GetEstadoCompassoIntensidade(){
+        return VetorEstadoCompassoIntencidade[estado][estadoCompasso];
+    }

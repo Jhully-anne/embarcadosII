@@ -2,13 +2,10 @@
  * @file    main.c
  * @brief   Projeto Metronomo digital - Jhully Anne
  * @version 2020/eart
-******************************************************************************
+******************************************************************************/
 
 #include <stdint.h>
 #include "tt_tasks.h"
-/*
- * 
- */
 
 #include "em_device.h"
 #include "em_emu.h"
